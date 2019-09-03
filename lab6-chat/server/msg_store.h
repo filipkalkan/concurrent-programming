@@ -92,12 +92,6 @@ msg_store_select_topic(struct msg_store *store,
                        int topic_id);
 
 /**
- * Delete all topics and all messages.
- */
-void
-msg_store_delete_all(struct msg_store *store);
-
-/**
  * Waits until either a new message or a new topic is available for
  * _client_.
  *

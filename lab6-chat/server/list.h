@@ -32,10 +32,3 @@ list_get(struct list *l, int index);
  */
 int
 list_size(struct list *l);
-
-/**
- * Dispose the list. Memory allocated for the individual elements is NOT
- * free()'d -- this must be done separately.
- */
-void
-list_dispose(struct list *l);

@@ -188,25 +188,6 @@ msg_store_select_topic(struct msg_store *store,
 
 // ----------------------------------------------------------------------------
 
-void
-msg_store_delete_all(struct msg_store *store)
-{
-  for (int i = 0; i < list_size(store->topics); i++) {
-    struct list *messages = list_get(store->topics, i);
-    for (int k = 0; k < list_size(messages); k++) {
-      struct message *m = list_get(messages, k);
-      free(m->username);
-      free(m->text);
-      free(m);
-    }
-    list_dispose(messages);
-  }
-  list_dispose(store->topics);
-  store->topics = list_create();
-}
-
-// ----------------------------------------------------------------------------
-
 int
 msg_store_await_message_or_topic(struct msg_store *store,
                                  struct client_state *client)

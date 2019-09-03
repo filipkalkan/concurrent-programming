@@ -65,12 +65,3 @@ list_size(struct list *l)
 {
   return l->used;
 }
-
-// ----------------------------------------------------------------------------
-
-void
-list_dispose(struct list *l)
-{
-  free(l->buf);
-  free(l);
-}
