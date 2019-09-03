@@ -1,26 +1,17 @@
 package test;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import chat.client.ChatLog;
+import chat.client.ServerControl;
 import chat.client.Twit;
 
 class ChatTest {
 
-    private ChatLog log;
-    
     @BeforeEach
     void setUp() throws Exception {
-        log = new ChatLog();
-        log.start();
-        log.awaitAllDeleted();
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-        log.logOut();
+        ServerControl.restartServer();
     }
 
     @Test
@@ -31,7 +22,8 @@ class ChatTest {
         Twit t = new Twit("twit", NBR_MESSAGES, MESSAGE_DELAY);
         t.start();
         t.join();
-        log.awaitResults(1, NBR_MESSAGES);
+
+        ChatLog.expect(1, NBR_MESSAGES);
     }
 
     @Test
@@ -50,6 +42,7 @@ class ChatTest {
         for (Twit t : twits) {
             t.join();
         }
-        log.awaitResults(NBR_TWITS, NBR_TWITS * NBR_MESSAGES);
+
+        ChatLog.expect(NBR_TWITS, NBR_TWITS * NBR_MESSAGES);
     }
 }

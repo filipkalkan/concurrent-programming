@@ -15,7 +15,7 @@
     fprintf(stderr,                                             \
             "(function %s, file %s, line %d)\n",                \
             __func__, __FILE__, __LINE__);                      \
-    exit(1);                                                    \
+    exit(EXIT_FAILURE);                                         \
   }                                                             \
 
 
@@ -29,5 +29,5 @@
     fprintf(stderr,                                             \
             "(function %s, file %s, line %d)\n",                \
             __func__, __FILE__, __LINE__);                      \
-    exit(1);                                                    \
+    exit(EXIT_FAILURE);                                         \
   }

@@ -13,14 +13,12 @@
 // ----------------------------------------------------------------------------
 
 #define PACKET_LOGIN            'L'
-#define PACKET_LOGIN_DELETE_ALL 'X'
 #define PACKET_CREATE_TOPIC     'C'
 #define PACKET_SELECT_TOPIC     'S'
 #define PACKET_POST_MESSAGE     'P'
-#define PACKET_RESET_STATE      'R'
+#define PACKET_RESTART          'R'
 #define PACKET_LOGOUT           'O'
 
-#define PACKET_ALL_DELETED      "X\n"
 #define PACKET_PUBLISH_TOPIC    "T %d %d %s %s\n"
 #define PACKET_PUBLISH_MESSAGE  "M %d %d %s %s\n"
 #define PACKET_LOGGED_OUT       "O\n"
@@ -103,13 +101,6 @@ client_reader_thread_main(void *arg)
     char *text = buffer + 1;
     switch (type)
     {
-      case PACKET_LOGIN_DELETE_ALL:
-        printf("[%p] clearing all messages\n", state);
-        msg_store_delete_all(store);
-        connection_send(conn, PACKET_ALL_DELETED);
-
-        // fall-through to PACKET_LOGIN below -- no break here
-
       case PACKET_LOGIN:
         printf("[%p] client '%s' connected\n", state, text);
         if (username != NULL) {
@@ -142,10 +133,8 @@ client_reader_thread_main(void *arg)
         msg_store_select_topic(store, state, atoi(text));
         break;
 
-      case PACKET_RESET_STATE:
-        printf("[%p] requesting all topics\n", state);
-        msg_store_init_client(store, state);
-        msg_store_select_topic(store, state, TOPIC_STATE_NO_TOPIC);
+      case PACKET_RESTART:
+        exit(EXIT_SUCCESS);
         break;
 
       default:
