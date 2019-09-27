@@ -1,7 +1,6 @@
 package messagingtest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -9,9 +8,9 @@ import java.io.PrintStream;
 import org.junit.jupiter.api.Test;
 
 class MessagingTest {
-
+    
     @Test
-    void testBidirectional() {
+    void testBidirectional() throws InterruptedException {
         checkMainPrints(ExampleBidirectional::main,
                 "request sent by ClientThread\n" + 
                 "request received by FibonacciThread\n" + 
@@ -20,7 +19,7 @@ class MessagingTest {
     }
 
     @Test
-    void testProducerConsumer() {
+    void testProducerConsumer() throws InterruptedException {
         checkMainPrints(ExampleProducerConsumer::main,
                 "consumer eagerly awaiting messages...\n" + 
                 "received [ole]\n" + 
@@ -30,7 +29,7 @@ class MessagingTest {
     }
 
     @Test
-    void testMessagingWithTimeout() {
+    void testMessagingWithTimeout() throws InterruptedException {
         checkMainPrints(ExampleMessagingWithTimeout::main,
                 "consumer eagerly awaiting messages...\n" + 
                 "received [ole]\n" + 
@@ -48,20 +47,17 @@ class MessagingTest {
     }
     
     /** Helper method: run a main method in another class, and check the printed output. */ 
-    private void checkMainPrints(InterruptibleMain main, String expectedOutput) {
+    private void checkMainPrints(InterruptibleMain main, String expectedOutput) throws InterruptedException {
         PrintStream sysout = System.out;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(bos, true));
-
-            main.invoke(new String[] {});
-            assertEquals(expectedOutput, bos.toString());
-        } catch (InterruptedException e) {
-            fail("unexpected: " + e);
-        } finally {
-            System.setOut(sysout);
-        }
+        System.setOut(new PrintStream(bos, true));
+        main.invoke(new String[] {});
+        System.setOut(sysout);
+        
+        // make sure line feeds are always represented as "\n",
+        // regardless of what the system uses
+        String actualOutput = bos.toString().replace(System.getProperty("line.separator"), "\n");
+        assertEquals(expectedOutput, actualOutput);
     }
-
 }
