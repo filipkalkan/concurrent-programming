@@ -46,7 +46,7 @@ client_writer_thread_main(void *arg)
 
       case TOPIC_STATE_LOGOUT_REQUESTED:
         connection_send(conn, PACKET_LOGGED_OUT);
-        // fall-through to DISCONNECTED below
+        // fall through
 
       case TOPIC_STATE_DISCONNECTED:
         // this means the reader thread has already exited
