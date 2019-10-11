@@ -48,14 +48,16 @@ supervise(pid_t child_process)
     } else {
       // server exited due to error -- pass it on
 
-      printf("----------------------------------------\n"
+      printf("\n"
+             "------------------------------------------------------------\n"
              "SERVER TERMINATED: internal error\n"
-             "----------------------------------------\n");
+             "------------------------------------------------------------\n\n");
       exit(exit_status);
     }
   }
 
-  printf("----------------------------------------\n"
+  printf("\n"
+         "------------------------------------------------------------\n"
          "SERVER TERMINATED: ");
 
   if (WIFSIGNALED(wstatus)) {
@@ -64,7 +66,8 @@ supervise(pid_t child_process)
     printf("%s", strsignal(WSTOPSIG(wstatus)));
   }
 
-  printf("\n----------------------------------------\n");
+  printf("\n"
+         "------------------------------------------------------------\n\n");
   exit(EXIT_FAILURE);
 }
 
@@ -80,11 +83,16 @@ main()
     if (child_process == 0) {
       run_server();
     } else {
+      // SIGINT (ctrl-C) will automatically be sent to both parent and child.
+      // Ignore ctrl-C in the parent process; instead wait for child to terminate.
+      signal(SIGINT, SIG_IGN);
+
       supervise(child_process);
     }
 
-    printf("----------------------------------\n"
+    printf("\n"
+           "------------------------------------------------------\n"
            "SERVER RESTARTING (for unit tests)\n"
-           "----------------------------------\n");
+           "------------------------------------------------------\n\n");
   }
 }
