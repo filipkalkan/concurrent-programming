@@ -42,7 +42,7 @@ supervise(pid_t child_process)
 
   if (WIFEXITED(wstatus)) {
     int exit_status = WEXITSTATUS(wstatus);
-    if(exit_status >= 0) {
+    if(exit_status == EXIT_SUCCESS) {
       // normal exit -- return and restart
       return;
     } else {
@@ -70,7 +70,8 @@ supervise(pid_t child_process)
 
 // ----------------------------------------------------------------------------
 
-int main()
+int
+main()
 {
   while (true) {
     pid_t child_process = fork();

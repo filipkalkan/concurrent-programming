@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 
 #include "connection.h"
@@ -12,8 +13,7 @@
 
 #define SERVER_PORT   (9000)
 
-static struct sockaddr_in server_address = { 0 };
-static int                server_socket;
+static int server_socket;
 static struct msg_store * store;
 
 // ----------------------------------------------------------------------------
@@ -21,7 +21,9 @@ static struct msg_store * store;
 void
 server_start()
 {
-  server_address.sin_family      = AF_INET; 
+  struct sockaddr_in server_address;
+  memset(&server_address, 0, sizeof(struct sockaddr_in));
+  server_address.sin_family      = AF_INET;
   server_address.sin_port        = htons(SERVER_PORT);
   server_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
@@ -37,7 +39,7 @@ server_start()
                 sizeof(server_address));
   fail_if(status < 0, "bind");
 
-  // If more than five clients initiate connection at the exact same time,
+  // If more than 100 clients initiate connection at the exact same time,
   // connections will be refused.
   status = listen(server_socket, 100);
   fail_if(status < 0, "listen");
