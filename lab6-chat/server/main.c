@@ -80,13 +80,15 @@ main()
     pid_t child_process = fork();
     fail_if(child_process < 0, "fork");
 
+    // SIGINT (ctrl-C) will automatically be sent to both parent and child.
+    // Ignore ctrl-C in the parent process; instead wait for child to terminate.
     if (child_process == 0) {
+      // child
+      signal(SIGINT, SIG_DFL);
       run_server();
     } else {
-      // SIGINT (ctrl-C) will automatically be sent to both parent and child.
-      // Ignore ctrl-C in the parent process; instead wait for child to terminate.
+      // parent
       signal(SIGINT, SIG_IGN);
-
       supervise(child_process);
     }
 
