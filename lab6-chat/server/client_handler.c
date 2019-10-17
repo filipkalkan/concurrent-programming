@@ -49,9 +49,6 @@ client_writer_thread_main(void *arg)
         // fall through
 
       case TOPIC_STATE_DISCONNECTED:
-        // this means the reader thread has already exited
-        // we can now safely dispose of the entire connection
-        connection_dispose(conn);
         pthread_exit(NULL);
         break;
 
@@ -85,16 +82,16 @@ client_reader_thread_main(void *arg)
 
   char buffer[CONNECTION_BUFFER_SIZE];  // buffer for received data
   char *username = NULL;
+  pthread_t writer_thread;
+  bool writer_thread_started = false;
+  bool active = true;
 
-  while (true) {
+  while (active) {
     bool still_connected = connection_receive(conn, buffer, sizeof(buffer));
     if (! still_connected) {
-      printf("[%p] client '%s' disconnected\n", state, username);
+      printf("[%p] '%s' disconnected unexpectedly\n", state, username);
       msg_store_select_topic(store, state, TOPIC_STATE_DISCONNECTED);
-      if (username != NULL) {
-        free(username);
-      }
-      pthread_exit(NULL);
+      break;
     }
 
     char type = buffer[0];
@@ -102,23 +99,25 @@ client_reader_thread_main(void *arg)
     switch (type)
     {
       case PACKET_LOGIN:
-        printf("[%p] client '%s' connected\n", state, text);
+        printf("[%p] '%s' logged in\n", state, text);
         if (username != NULL) {
           fail("[%p] already logged in as '%s'\n", state, username);
         }
         username = strdup(text);
 
         // now start the writer thread
-        pthread_t write_thread;
-        int status = pthread_create(&write_thread,
+        int status = pthread_create(&writer_thread,
                                     NULL,
                                     &client_writer_thread_main,
                                     conn);
-        fail_if(status < 0, "pthread_create");
+        fail_if(status != 0, "pthread_create");
+        writer_thread_started = true;
         break;
 
       case PACKET_LOGOUT:
+        printf("[%p] '%s' logged out\n", state, username);
         msg_store_select_topic(store, state, TOPIC_STATE_LOGOUT_REQUESTED);
+        active = false;
         break;
 
       case PACKET_POST_MESSAGE:
@@ -141,6 +140,18 @@ client_reader_thread_main(void *arg)
         fail("[%p] unexpected message type '%c'\n", state, type);
     }
   }
+
+  // Clean-up: the client is now in one of the states
+  // TOPIC_STATE_LOGOUT_REQUESTED or TOPIC_STATE_DISCONNECTED.
+  // Wait for the writer thread to terminate,
+  // then release the shared data.
+  if (writer_thread_started) {
+    int status = pthread_join(writer_thread, NULL);
+    fail_if(status != 0, "pthread_join");
+    free(username);
+  }
+  connection_dispose(conn);
+  return NULL;
 }
 
 // ============================================================================
@@ -150,12 +161,11 @@ client_handler_launch(struct connection *conn)
 {
   // Start the reader thread here. The writer thread is started in
   // client_reader_thread_main() above, upon receiving PACKET_LOGIN
-  // or PACKET_LOGIN_DELETE_ALL.
 
   pthread_t read_thread;
   int status = pthread_create(&read_thread,
                               NULL,
                               &client_reader_thread_main,
                               conn);
-  fail_if(status < 0, "pthread_create");
+  fail_if(status != 0, "pthread_create");
 }
