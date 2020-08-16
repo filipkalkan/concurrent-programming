@@ -15,6 +15,7 @@ public class ClockMain {
         ClockOutput out = clockData.getOutput();
 
         clockData.setTime(155950);
+        clockData.setAlarmTime(155955);
 
         Semaphore sem = in.getSemaphore();
         
@@ -29,10 +30,23 @@ public class ClockMain {
             int choice = userInput.getChoice();
             int value = userInput.getValue();
             
-            //TODO: Handle input
-
-            System.out.println("choice = " + choice + "  value=" + value);
-            sem.release();
+            if(clockData.alarmIsActive()) {
+            	clockData.toggleAlarm();
+            }
+            
+            //Input handling
+            switch (choice) {
+            case ClockInput.CHOICE_SET_TIME:
+            	clockData.setTime(value);
+            	break;
+            case ClockInput.CHOICE_SET_ALARM:
+            	clockData.setAlarmTime(value);
+            	break;
+            case ClockInput.CHOICE_TOGGLE_ALARM:
+            	clockData.toggleAlarm();
+            	break;
+            }
         }
     }
+
 }

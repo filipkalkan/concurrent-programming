@@ -23,7 +23,11 @@ public class TickerThread extends Thread {
 				clockData.clockTick();
 				start = now;
 				
-				//TODO: Handle alarm
+				//TODO: Slows down the tick when active
+				if(clockData.alarmIsActive()) {
+					clockData.soundAlarm();
+				}
+				
 				
 				try {
 					Thread.sleep(THREAD_DELAY);
