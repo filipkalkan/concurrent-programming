@@ -89,6 +89,7 @@ public class ClockData {
 		out.setAlarmIndicator(alarmSet);
 	}
 	
+	
 	public boolean alarmIsActive() {
 		mutex.lock();
 		boolean active = alarmSet && toSeconds(time) >= toSeconds(alarmTime) 
@@ -107,7 +108,8 @@ public class ClockData {
 		mutex.lock();
 		nbrBeeps++;
 		if(nbrBeeps >= MAX_NBR_BEEPS) {
-			toggleAlarm();
+			alarmSet = false;
+			out.setAlarmIndicator(false);
 			nbrBeeps = 0;
 		}
 		mutex.unlock();

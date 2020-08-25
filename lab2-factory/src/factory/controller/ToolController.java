@@ -20,8 +20,11 @@ public class ToolController {
         this.pressingMillis = pressingMillis;
         this.paintingMillis = paintingMillis;
     }
+    
+    //When one thread is executing a synchronized method for an object, all other threads that invoke synchronized methods
+    //for the same object block (suspend execution) until the first thread is done with the object
 
-    public void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+    public synchronized void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         //
         // TODO: you will need to modify this method
         //
@@ -35,12 +38,16 @@ public class ToolController {
         }
     }
 
-    public void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+    public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         //
         // TODO: you will need to modify this method
         //
-        if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-        	// TODO
+    	if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
+        	conveyor.off();
+        	paint.on();
+        	Thread.sleep(paintingMillis);
+        	paint.off();
+        	conveyor.on();
         }
     }
     
