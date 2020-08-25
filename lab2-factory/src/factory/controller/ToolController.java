@@ -7,6 +7,7 @@ import factory.swingview.Factory;
 public class ToolController {
     private final DigitalSignal conveyor, press, paint;
     private final long pressingMillis, paintingMillis;
+    private boolean pressing, painting;
     
     public ToolController(DigitalSignal conveyor,
                           DigitalSignal press,
@@ -19,23 +20,42 @@ public class ToolController {
         this.paint = paint;
         this.pressingMillis = pressingMillis;
         this.paintingMillis = paintingMillis;
+        pressing = painting = false;
     }
     
     //When one thread is executing a synchronized method for an object, all other threads that invoke synchronized methods
     //for the same object block (suspend execution) until the first thread is done with the object
+    
+    //When stopping and starting conveyor is isolated in synchronized methods and onSensor methods are left unsynced factory is
+    //able to paint and press at the same time. This solution requires two state variables: pressing and painting. Only once both
+    //actions are completed may the conveyor start running again.
 
-    public synchronized void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+    public void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         //
         // TODO: you will need to modify this method
         //
         if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
-            conveyor.off();
-            press.on();
+        	pressing = true;
+        	stopConveyor(painting);
+        	press.on();
             Thread.sleep(pressingMillis);
             press.off();
             Thread.sleep(pressingMillis);   // press needs this time to retract
-            conveyor.on();
+            pressing = false;
+            startConveyor(painting);
         }
+    }
+    
+    private synchronized void startConveyor(boolean otherAction) {
+    	if (!otherAction) {
+    		conveyor.on();
+    	}
+    }
+    
+    private synchronized void stopConveyor(boolean otherAction) {
+    	if (!otherAction) {
+    		conveyor.off();
+    	}
     }
 
     public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
@@ -43,11 +63,13 @@ public class ToolController {
         // TODO: you will need to modify this method
         //
     	if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-        	conveyor.off();
+    		stopConveyor(pressing);
+        	painting = true;
         	paint.on();
         	Thread.sleep(paintingMillis);
         	paint.off();
-        	conveyor.on();
+        	painting = false;
+        	startConveyor(pressing);
         }
     }
     
