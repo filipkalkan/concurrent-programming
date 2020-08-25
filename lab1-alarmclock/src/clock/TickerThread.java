@@ -2,7 +2,7 @@ package clock;
 
 public class TickerThread extends Thread {
 	private ClockData clockData;
-	private final int THREAD_DELAY = 990;
+	private final int THREAD_DELAY = 500;
 	private final int TICK_INTERVAL = 1000;
 	
 	public TickerThread(ClockData clockData) {
@@ -15,6 +15,7 @@ public class TickerThread extends Thread {
 		while(true) {
 			long now = System.currentTimeMillis();
 			long timeDifference = now - start;
+			System.out.println(timeDifference);
 			
 			//Following check will be encountered multiple times per tick.
 			//THREAD_DELAY is set to slightly less than TICK_INTERVAL for increased accuracy.
@@ -23,7 +24,6 @@ public class TickerThread extends Thread {
 				clockData.clockTick();
 				start = now;
 				
-				//TODO: Slows down the tick when active
 				if(clockData.alarmIsActive()) {
 					clockData.soundAlarm();
 				}

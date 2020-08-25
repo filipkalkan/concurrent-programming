@@ -15,7 +15,6 @@ public class ClockData {
 	private int alarmTime;
 	private boolean alarmSet;
 	private int time = 0;
-	private int nbrBeeps = 0;
 	private final int MAX_NBR_BEEPS = 20;
 	private final Lock mutex;
 	
@@ -91,12 +90,8 @@ public class ClockData {
 	
 	
 	public boolean alarmIsActive() {
-		mutex.lock();
-		boolean active = alarmSet && toSeconds(time) >= toSeconds(alarmTime) 
-				&& toSeconds(alarmTime) + 20 >= toSeconds(time);
-		mutex.unlock();
-		
-		return active;
+		return alarmSet && toSeconds(time) >= toSeconds(alarmTime);
+				//&& toSeconds(alarmTime) + MAX_NBR_BEEPS >= toSeconds(time);
 	}
 	
 	public int getTime() {
@@ -106,11 +101,9 @@ public class ClockData {
 	public void soundAlarm() {
 		out.alarm();
 		mutex.lock();
-		nbrBeeps++;
-		if(nbrBeeps >= MAX_NBR_BEEPS) {
+		if(toSeconds(alarmTime) + MAX_NBR_BEEPS <= toSeconds(time)) {
 			alarmSet = false;
 			out.setAlarmIndicator(false);
-			nbrBeeps = 0;
 		}
 		mutex.unlock();
 	}
