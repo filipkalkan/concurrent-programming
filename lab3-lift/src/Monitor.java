@@ -12,11 +12,14 @@ public class Monitor {
 	private int load; // number of passengers currently in the lift
 	private ArrayList<Person> waitingPersons;
 	private ArrayList<Person> loadedPersons;
+	private boolean ongoingEntry;
+	private boolean ongoingExit;
 	
 	public Monitor() {
 		waitingPersons = new ArrayList<>();
 		loadedPersons = new ArrayList<>();
-		
+		goingUp = false;
+		floor = 0;
 	}
 
 	public boolean liftFull() {
@@ -35,7 +38,11 @@ public class Monitor {
 		if(floor == 0 || floor == NBR_FLOORS) {
 			goingUp = !goingUp;
 		}
-		return goingUp ? floor + 1 : floor - 1;
+		if(goingUp) {
+			return floor + 1;
+		} else {
+			return floor - 1;
+		}
 	}
 
 	public void setFloor(int floor) {
@@ -48,15 +55,6 @@ public class Monitor {
 
 	public boolean isMoving() {
 		return moving;
-	}
-
-	public synchronized void unloadPassengers() {
-		
-		
-	}
-
-	public synchronized void loadPassengers() {
-		
 	}
 	
 	public void addWaitingPerson(Person person) {
@@ -92,6 +90,22 @@ public class Monitor {
 
 	public void exitLift(Person person) {
 		loadedPersons.remove(person);
+	}
+	
+	public void setOngoingEntry(boolean entering) {
+		ongoingEntry = entering;
+	}
+	
+	public void setOngoingExit(boolean exiting) {
+		ongoingExit = exiting;
+	}
+	
+	public boolean ongoingEntry() {
+		return ongoingEntry;
+	}
+	
+	public boolean ongoingExit() {
+		return ongoingExit;
 	}
 	
 }

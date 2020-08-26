@@ -23,7 +23,7 @@ public class Lift extends Thread {
 		loadPassengers();
 	}
 
-	private void loadPassengers() {
+	private synchronized void loadPassengers() {
 		while(!monitor.liftFull() && monitor.passengersWantEnter()) {
 			try {
 				wait(WAITING_TIME);
@@ -35,12 +35,11 @@ public class Lift extends Thread {
 		
 	}
 
-	private void unloadPassengers() {
+	private synchronized void unloadPassengers() {
 		while(!monitor.liftEmpty() && monitor.passengersWantExit()) {
 			try {
 				wait(WAITING_TIME);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

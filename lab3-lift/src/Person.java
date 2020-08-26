@@ -32,14 +32,18 @@ public class Person extends Thread {
 	}
 	
 	private void exitLift() {
+		monitor.setOngoingExit(true);
 		passenger.exitLift();
 		monitor.exitLift(this);
 		passenger.end();
+		monitor.setOngoingExit(false);
 	}
 	
 	private void enterLift() {
+		monitor.setOngoingEntry(true);
 		passenger.enterLift();
 		monitor.enterLift(this);
+		monitor.setOngoingExit(false);
 	}
 	
 	private void begin() {
@@ -64,9 +68,13 @@ public class Person extends Thread {
 		}
 		
 	}
-
+	
+	//TODO: Check approach with ongoing entry/exit. Problem is that sometimes more than 4 ppl get in lift.
 	public boolean entryAllowed() {
-		return !monitor.liftFull() && !monitor.isMoving() && monitor.getFloor() == passenger.getStartFloor() && monitor.goingUp() == goingUp;
+		boolean allowed = !monitor.liftFull() && !monitor.isMoving() && monitor.getFloor() == passenger.getStartFloor() && monitor.goingUp() == goingUp && !monitor.ongoingEntry();
+		if(passenger.getStartFloor() == 6 && allowed)
+			System.out.println("entry allowed");
+		return allowed;
 	}
 	
 	public int getStartFloor() {
