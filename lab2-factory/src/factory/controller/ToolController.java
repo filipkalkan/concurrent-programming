@@ -43,36 +43,34 @@ public class ToolController {
 		//
 		if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
 			pressing = true;
-			stopConveyor(painting);
+			stopConveyor();
 			press.on();
 			waitOutside(pressingMillis);
 			press.off();
 			waitOutside(pressingMillis); // press needs this time to retract
 			pressing = false;
-			startConveyor(painting);
+			startConveyor();
 		}
 	}
 
 	/** Helper method: sleep outside of monitor for ’millis’ milliseconds. */
     private void waitOutside(long millis) throws InterruptedException {
 	    long timeToWakeUp = System.currentTimeMillis() + millis;
-	    // ...
+	    
 	    while (System.currentTimeMillis() < timeToWakeUp) {
 	    	long dt = timeToWakeUp - System.currentTimeMillis();
 	    	wait(dt);
 	    }
     }
 
-	private synchronized void startConveyor(boolean otherAction) {
-		if (!otherAction) {
+	private void startConveyor() {
+		if (!painting && !pressing) {
 			conveyor.on();
 		}
 	}
 
-	private synchronized void stopConveyor(boolean otherAction) {
-		if (!otherAction) {
+	private void stopConveyor() {
 			conveyor.off();
-		}
 	}
 
 	public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
@@ -80,13 +78,13 @@ public class ToolController {
 		// TODO: you will need to modify this method
 		//
 		if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-			stopConveyor(pressing);
+			stopConveyor();
 			painting = true;
 			paint.on();
 			waitOutside(paintingMillis);
 			paint.off();
 			painting = false;
-			startConveyor(pressing);
+			startConveyor();
 		}
 	}
 

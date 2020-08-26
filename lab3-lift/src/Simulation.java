@@ -14,7 +14,7 @@ public class Simulation {
         	persons[i].start();
         }
         
-        Monitor monitor = new Monitor(view, persons);
+        Monitor monitor = new Monitor(persons);
         Lift lift = new Lift(monitor, view);
         
         lift.start();

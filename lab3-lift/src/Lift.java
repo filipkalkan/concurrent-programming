@@ -13,17 +13,21 @@ public class Lift extends Thread {
 	@Override
 	public void run() {
 		while(true) {
-			moveLift();
+			try {
+				moveLift();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
-	private void moveLift() {
+	private synchronized void moveLift() throws InterruptedException {
 		int currentFloor = monitor.getCurrentFloor();
 		int nextFloor = monitor.getNextFloor();
 		view.moveLift(currentFloor, nextFloor);
 		monitor.setFloor(nextFloor);
 		monitor.unloadPassengers();
 		monitor.loadPassengers();
-		
 	}
 }
