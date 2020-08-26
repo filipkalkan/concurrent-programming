@@ -1,33 +1,60 @@
 import lift.LiftView;
 
 public class Lift extends Thread {
+	private static final long WAITING_TIME = 100;
+	LiftView view;
+	Monitor monitor;
 	
-	private Monitor monitor;
-	private LiftView view;
-
-	public Lift(Monitor monitor, LiftView view) {
-		this.monitor = monitor;
+	public Lift(LiftView view, Monitor monitor) {
 		this.view = view;
+		this.monitor = monitor;
 	}
 	
 	@Override
 	public void run() {
 		while(true) {
+			updatePassengers();
+			moveToNextFloor();
+		}
+	}
+
+	private synchronized void updatePassengers() {
+		unloadPassengers();
+		loadPassengers();
+	}
+
+	private void loadPassengers() {
+		while(!monitor.liftFull() && monitor.passengersWantEnter()) {
 			try {
-				moveLift();
+				wait(WAITING_TIME);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
 	}
 
-	private synchronized void moveLift() throws InterruptedException {
-		int currentFloor = monitor.getCurrentFloor();
+	private void unloadPassengers() {
+		while(!monitor.liftEmpty() && monitor.passengersWantExit()) {
+			try {
+				wait(WAITING_TIME);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+
+	private void moveToNextFloor() {
+		int floor = monitor.getFloor();
 		int nextFloor = monitor.getNextFloor();
-		view.moveLift(currentFloor, nextFloor);
+		
+		monitor.toggleMoving();
+		view.moveLift(floor, nextFloor);
+		monitor.toggleMoving();
 		monitor.setFloor(nextFloor);
-		monitor.unloadPassengers();
-		monitor.loadPassengers();
+		
 	}
 }

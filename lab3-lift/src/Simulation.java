@@ -6,19 +6,20 @@ public class Simulation {
 
 	public static void main(String[] args) {
 		LiftView view = new LiftView();
-		
+		Monitor monitor = new Monitor();
 		Person[] persons = new Person[NBR_PERSONS];
-
-        for(int i = 0; i < 20; i++) {
-        	persons[i] = new Person(view.createPassenger());
-        	persons[i].start();
-        }
-        
-        Monitor monitor = new Monitor(persons);
-        Lift lift = new Lift(monitor, view);
-        
-        lift.start();
-
+		
+		for(int i = 0; i < 20; i++) {
+			Person person = new Person(view.createPassenger(), monitor);
+			person.start();
+			persons[i] = person;
+		}
+		
+		Lift lift = new Lift(view, monitor);
+		lift.start();
+		
+		
+		
         /*
         int from = passenger.getStartFloor();
         int to   = passenger.getDestinationFloor();
