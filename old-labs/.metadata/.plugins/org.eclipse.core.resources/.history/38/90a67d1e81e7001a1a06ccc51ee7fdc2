@@ -1,0 +1,13 @@
+import lift.LiftView;
+
+public class Lift extends Thread {
+	
+	public Lift() {
+		
+	}
+	
+	@Override
+	public void run() {
+		
+	}
+}

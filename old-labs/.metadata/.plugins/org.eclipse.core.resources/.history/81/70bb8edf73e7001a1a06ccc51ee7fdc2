@@ -1,0 +1,61 @@
+import java.util.Random;
+
+import lift.Passenger;
+
+public class Person extends Thread {
+	private Passenger passenger;
+	private Random rand;
+	private State state;
+	
+	enum State{
+		BEGINNING,
+		WAITING,
+		ENTERING,
+		ELEVATING,
+		EXITING,
+		ENDING
+	}
+	
+	public Person(Passenger passenger) {
+		this.passenger = passenger;
+		this.rand = new Random();
+		state = State.BEGINNING;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			while(true) {
+				go();
+			}
+			
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public synchronized void go() throws InterruptedException {
+		//wait();
+		state = State.BEGINNING;
+		passenger.begin();
+		state = State.WAITING;
+		wait();
+		state = State.ENTERING;
+		passenger.enterLift();
+		state = State.ELEVATING;
+		wait();
+		state = State.EXITING;
+		passenger.exitLift();
+		state = State.ENDING;
+		passenger.end();
+	}
+	
+	public int getDestinationFloor() {
+		return passenger.getDestinationFloor();
+	}
+	
+	public int getStartFloor() {
+		return passenger.getStartFloor();
+	}
+
+}

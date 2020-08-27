@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;pressingDown&apos; in &apos;factory.controller.ToolController&apos; to &apos;pressing&apos;&#x0D;&#x0A;- Original project: &apos;lab2-factory&apos;&#x0D;&#x0A;- Original element: &apos;factory.controller.ToolController.pressingDown&apos;&#x0D;&#x0A;- Renamed element: &apos;factory.controller.ToolController.pressing&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;pressingDown&apos;" flags="589826" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src&lt;factory.controller{ToolController.java[ToolController^pressingDown" name="pressing" references="true" setter="false" stamp="1598360696480" textual="false" version="1.0"/>
+</session>

@@ -1,0 +1,25 @@
+import java.util.Random;
+
+import lift.Passenger;
+
+public class Person extends Thread {
+	private Passenger passenger;
+	private Monitor monitor;
+	
+	public Person(Passenger passenger, Monitor monitor) {
+		this.passenger = passenger;
+		this.monitor = monitor;
+	}
+	
+	@Override
+	public void run() {
+		passenger.begin();
+		awaitEntry();
+		passenger.enterLift();
+		awaitExit();
+		passenger.exitLift();
+		//Notify??
+		passenger.end();
+	}
+
+}

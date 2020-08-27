@@ -1,0 +1,16 @@
+import java.util.Random;
+
+import lift.Passenger;
+
+public class Person extends Thread {
+	Passenger passenger;
+	
+	public Person() {
+		
+	}
+	
+	public void run() {
+		
+	}
+
+}

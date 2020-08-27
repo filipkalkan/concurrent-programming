@@ -1,0 +1,5 @@
+1598367011238	Rename field 'NBR_PASSENGERS'
+1598429617688	Rename type 'State'
+1598429629638	Rename field 'state'
+1598442019435	Rename method 'getMoving'
+1598443706500	Rename method 'passengersOnCurrentFloor'

@@ -1,0 +1,20 @@
+
+public class Monitor {
+	
+	private static final int MAX_LOAD = 4;
+	int floor; // the floor the lift is currently on
+	boolean moving; // true if the lift is moving, false otherwise
+	int direction; // +1 if lift is going up, -1 if going down
+	int[] waitEntry; // number of passengers waiting to enter the lift at the various floors
+	int[] waitExit; // number of passengers (in lift) waiting to leave at the various floors
+	int load; // number of passengers currently in the lift
+	
+	public Monitor() {
+		
+	}
+
+	public boolean liftFull() {
+		return load >= MAX_LOAD;
+	}
+	
+}
