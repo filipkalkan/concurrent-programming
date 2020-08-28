@@ -1,20 +1,21 @@
 package train.simulation;
 
-import train.model.Route;
-import train.model.Segment;
 import train.view.TrainView;
 
 public class TrainSimulation {
 
-    public static void main(String[] args) {
+    private static final int NBR_TRAINS = 20;
 
+	public static void main(String[] args) {
         TrainView view = new TrainView();
+        TrainMonitor monitor = new TrainMonitor();
         
-        Route route = view.loadRoute();
+        for(int i = 0; i < NBR_TRAINS; i++) {
+        	Train t = new Train(view, monitor);
+        	t.start();
+        }
         
-        Segment first = route.next();
         
-        first.enter();
     }
 
 }
