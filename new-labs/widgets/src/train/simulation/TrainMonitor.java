@@ -16,6 +16,10 @@ public class TrainMonitor {
 		
 	}
 	
+	//When commenting out the call to wait() the simulation stops
+	//immediately after starting. Reason being no other thread can
+	//access the object to remove a segment from occupiedSegments.
+	
 	public synchronized void enterSegment(Segment s) throws InterruptedException {
 		while(occupiedSegments.contains(s)) {
 			wait(WAITING_TIME);

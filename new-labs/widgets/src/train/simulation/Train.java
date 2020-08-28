@@ -8,6 +8,7 @@ import train.model.Segment;
 import train.view.TrainView;
 
 public class Train extends Thread {
+	private static final int TRAIN_LENGTH = 7;
 	List<Segment> segmentQueue = new LinkedList<>();
 	Route route;
 	TrainView view;
@@ -21,14 +22,11 @@ public class Train extends Thread {
 	public void run() {
 		try {
 			route = view.loadRoute();
-
-			Segment first = route.next();
-			Segment second = route.next();
-			Segment third = route.next();
-
-			segmentQueue.add(first);
-			segmentQueue.add(second);
-			segmentQueue.add(third);
+			
+			for(int i = 0; i < TRAIN_LENGTH; i++) {
+				Segment s = route.next();
+				segmentQueue.add(s);
+			}
 
 			for (Segment s : segmentQueue) {
 				monitor.enterSegment(s);

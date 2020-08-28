@@ -15,6 +15,7 @@ import factory.swingview.Factory;
 public class LabToolController implements ToolController {
     private final DigitalSignal conveyor, press, paint;
     private final long pressingMillis, paintingMillis;
+	private boolean pressing, painting;
     
     public LabToolController(DigitalSignal conveyor, DigitalSignal press, DigitalSignal paint, long pressingMillis, long paintingMillis) {
         this.conveyor = conveyor;
@@ -25,35 +26,75 @@ public class LabToolController implements ToolController {
     }
 
     @Override
-    public void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
-        //
-        // TODO: you will need to modify this method.
-        //
-        // Note that this method can be called concurrently with onPaintSensorHigh
-        // (that is, in a separate thread).
-        //
-        if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
-            conveyor.off();
-            press.on();
-            Thread.sleep(pressingMillis);
-            press.off();
-            Thread.sleep(pressingMillis);   // press needs this time to retract
-            conveyor.on();
-        }
+
+	// When one thread is executing a synchronized method for an object, all other
+	// threads that invoke synchronized methods
+	// for the same object block (suspend execution) until the first thread is done
+	// with the object
+
+	// When stopping and starting conveyor is isolated in synchronized methods and
+	// onSensor methods are left unsynced factory is
+	// able to paint and press at the same time. This solution requires two state
+	// variables: pressing and painting. Only once both
+	// actions are completed may the conveyor start running again.
+
+	// When replacing the sleep calls with wait throughput increases in spite of big
+	// synced code blocks. The reason being that
+	// sleep does not cause the lock on the object to release as opposed to wait
+	// which releases the lock during the blocking time.
+	// The result is that during eg. pressing, as soon as wait is called the
+	// painting can begin.
+
+	public synchronized void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+		//
+		// TODO: you will need to modify this method
+		//
+		if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
+			pressing = true;
+			stopConveyor();
+			press.on();
+			waitOutside(pressingMillis);
+			press.off();
+			waitOutside(pressingMillis); // press needs this time to retract
+			pressing = false;
+			startConveyor();
+		}
+	}
+
+	/** Helper method: sleep outside of monitor for ’millis’ milliseconds. */
+    private void waitOutside(long millis) throws InterruptedException {
+	    long timeToWakeUp = System.currentTimeMillis() + millis;
+	    
+	    while (System.currentTimeMillis() < timeToWakeUp) {
+	    	long dt = timeToWakeUp - System.currentTimeMillis();
+	    	wait(dt);
+	    }
     }
 
-    @Override
-    public void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
-        //
-        // TODO: you will need to modify this method.
-        //
-        // Note that this method can be called concurrently with onPressSensorHigh
-        // (that is, in a separate thread).
-        //
-        if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-        	// TODO
-        }
-    }
+	private void startConveyor() {
+		if (!painting && !pressing) {
+			conveyor.on();
+		}
+	}
+
+	private void stopConveyor() {
+			conveyor.off();
+	}
+
+	public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+		//
+		// TODO: you will need to modify this method
+		//
+		if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
+			stopConveyor();
+			painting = true;
+			paint.on();
+			waitOutside(paintingMillis);
+			paint.off();
+			painting = false;
+			startConveyor();
+		}
+	}
     
     // -----------------------------------------------------------------------
     
