@@ -13,6 +13,7 @@ public class Lift extends Thread {
         this.view = view;
         this.monitor = monitor;
         this.persons = persons;
+        this.view.openDoors(0);
     }
 
     @Override
@@ -56,7 +57,11 @@ public class Lift extends Thread {
         int nextFloor = monitor.getNextFloor();
 
         monitor.toggleMoving();
+        monitor.setDoorsOpen(false); // close doors
+        view.closeDoors();
         view.moveLift(floor, nextFloor);
+        view.openDoors(nextFloor);
+        monitor.setDoorsOpen(true); // open doors
         monitor.toggleMoving();
         monitor.setFloor(nextFloor);
 

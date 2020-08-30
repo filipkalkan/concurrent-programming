@@ -1,3 +1,5 @@
+package lift;
+
 import java.util.Random;
 
 import lift.Passenger;
@@ -22,36 +24,51 @@ public class Person extends Thread {
         try {
             begin();
             awaitEntry();
-            enterLift();
             awaitExit();
-            exitLift();
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
-
+/*
     private void exitLift() {
-        monitor.setOngoingExit(true);
+        monitor.addToExiting(this);
         passenger.exitLift();
         monitor.exitLift(this);
         passenger.end();
-        monitor.setOngoingExit(false);
+        monitor.removeFromExiting(this);
     }
 
     private void enterLift() {
-        monitor.enterWhenCan(getDestinationFloor())
+    	monitor.enterWhenAllowed(this);
+    	
+        monitor.addToEntering(this);
+        passenger.enterLift();
+        monitor.enterLift(this);
+        monitor.removeFromEntering(this);
     }
-
+*/
     private void begin() {
         passenger.begin();
         monitor.addWaitingPerson(this);
     }
 
     private synchronized void awaitExit() throws InterruptedException {
-        while (!exitAllowed()) {
+    	monitor.exitWhenAllowed(this);
+    	passenger.exitLift();
+    	monitor.completeExiting(this);
+    	passenger.end();
+    }
+
+    private synchronized void awaitEntry() throws InterruptedException {
+    	monitor.enterWhenAllowed(this);
+    	passenger.enterLift();
+    	monitor.completeEntering(this);
+    	
+    	
+    	/*while (!entryAllowed()) {
             Thread.sleep(SLEEP_DURATION);
-        }
+        }*/
 
     }
 
@@ -59,23 +76,19 @@ public class Person extends Thread {
         return !monitor.isMoving() && monitor.getFloor() == passenger.getDestinationFloor();
     }
 
-    private synchronized void awaitEntry() throws InterruptedException {
-        while (!entryAllowed()) {
-            Thread.sleep(SLEEP_DURATION);
-        }
-
-    }
-
+    
     // TODO: Check approach with ongoing entry/exit. Problem is that sometimes more
     // than 4 ppl get in lift.
+    /*
     public boolean entryAllowed() {
+    	
         boolean allowed = !monitor.liftFull() && !monitor.isMoving() && monitor.getFloor() == passenger.getStartFloor()
                 && monitor.goingUp() == goingUp && !monitor.ongoingEntry();
-        if (passenger.getStartFloor() == 6 && allowed)
-            System.out.println("entry allowed");
+        
+        
         return allowed;
     }
-
+*/
     public int getStartFloor() {
         return passenger.getStartFloor();
     }
@@ -83,5 +96,11 @@ public class Person extends Thread {
     public int getDestinationFloor() {
         return passenger.getDestinationFloor();
     }
+    
+    public boolean isGoingUp() {
+        return goingUp;
+    }
+    
+    
 
 }

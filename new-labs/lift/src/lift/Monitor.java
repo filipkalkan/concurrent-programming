@@ -1,5 +1,6 @@
 package lift;
 
+import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class Monitor extends Thread {
@@ -9,9 +10,12 @@ public class Monitor extends Thread {
     int floor; // the floor the lift is currently on
     boolean moving; // true if the lift is moving, false if standing still with doors open
     boolean goingUp; // +1 if lift is going up, -1 if going down
-    int[] waitEntry; // number of passengers waiting to enter the lift at the various floors
-    int[] waitExit; // number of passengers (in lift) waiting to leave at the various floors
+    ArrayList<Person> waitingPersons = new ArrayList<>(); // number of passengers waiting to enter the lift at the various floors
+    ArrayList<Person> loadedPersons = new ArrayList<>(); // number of passengers (in lift) waiting to leave at the various floors
     int load; // number of passengers currently in the lift
+    int entering = 0; // Number of people entering the lift right now
+    int exiting = 0;
+    boolean doorsOpen = false;
 
     Semaphore mutex = new Semaphore(1);
 
@@ -52,7 +56,7 @@ public class Monitor extends Thread {
 
     public boolean passengersWantEnter() {
         for (Person person : waitingPersons) {
-            if (person.entryAllowed()) {
+            if (personCanEnter(person) || entering > 0) {
                 return true;
             }
         }
@@ -63,30 +67,60 @@ public class Monitor extends Thread {
         return load == 0;
     }
 
-    // public boolean passengersWantExit() {
-    //     for (Person person : loadedPersons) {
-    //         if (person.getDestinationFloor() == floor) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
+     public boolean passengersWantExit() {
+         for (Person person : loadedPersons) {
+             if (personCanExit(person) || exiting > 0) {
+                 return true;
+             }
+         }
+         return false;
+     }
 
-    // public synchronized void enterLift(Person person) {
-    //     waitingPersons.remove(person);
-    //     loadedPersons.add(person);
-    // }
+     public synchronized void enterLift(Person person) {
+         loadedPersons.add(person);
+     }
 
-    // public void exitLift(Person person) {
-    //     loadedPersons.remove(person);
-    // }
-
+/*
     public void enterWhenCan(int destination) throws InterruptedException {
         mutex.acquire();
         load++;
         waitExit[destination]++;
     }
+*/    
+    public void addWaitingPerson(Person person) {
+    	waitingPersons.add(person);
+    }
 
+    
+    public synchronized void enterWhenAllowed(Person person) throws InterruptedException {
+    	while(!personCanEnter(person)) {
+    		wait(100);
+    	}
+    	enterLift(person);
+        
+        entering++;
+    }
+    
+    public synchronized void completeEntering(Person person) {
+    	waitingPersons.remove(person);
+        entering--;
+        load++;
+    }
+    
+    public synchronized void exitWhenAllowed(Person person) throws InterruptedException {
+    	while(!personCanExit(person)) {
+    		wait(100);
+    	}
+        
+        exiting++;
+    }
+    
+    public synchronized void completeExiting(Person person) {
+    	loadedPersons.remove(person);
+        exiting--;
+        load--;
+    }
+    
     // public void setOngoingExit(boolean exiting) {
     //     ongoingExit = exiting;
     // }
@@ -98,5 +132,22 @@ public class Monitor extends Thread {
     // public boolean ongoingExit() {
     //     return ongoingExit;
     // }
+    
+    public boolean personCanEnter(Person person) {
+    	//System.out.println("!liftFull " + !liftFull() + " !isMoving " + isMoving() + " getFloor" + getFloor() + " goingUp " + goingUp + " person.getStartFloor()\r\n" + 
+    	//		" " + person.getStartFloor());
+    	return !liftFull() &&  getFloor() == person.getStartFloor()
+                && goingUp() == person.isGoingUp() && doorsOpen;
+    }
+    
+    public boolean personCanExit(Person person) {
+    	//System.out.println("!liftFull " + !liftFull() + " !isMoving " + isMoving() + " getFloor" + getFloor() + " goingUp " + goingUp + " person.getStartFloor()\r\n" + 
+    	//		" " + person.getStartFloor());
+    	return  getFloor() == person.getDestinationFloor() && doorsOpen;
+    }
+    
+    public void setDoorsOpen(boolean open) {
+    	doorsOpen = open;
+    }
 
 }
