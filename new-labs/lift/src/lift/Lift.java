@@ -1,3 +1,5 @@
+package lift;
+
 import lift.LiftView;
 import lift.Monitor;
 
@@ -5,10 +7,12 @@ public class Lift extends Thread {
     private static final long WAITING_TIME = 100;
     LiftView view;
     Monitor monitor;
+    Person[] persons;
 
-    public Lift(LiftView view, Monitor monitor) {
+    public Lift(LiftView view, Monitor monitor, Person[] persons) {
         this.view = view;
         this.monitor = monitor;
+        this.persons = persons;
     }
 
     @Override

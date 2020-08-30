@@ -40,10 +40,7 @@ public class Person extends Thread {
     }
 
     private void enterLift() {
-        monitor.setOngoingEntry(true);
-        passenger.enterLift();
-        monitor.enterLift(this);
-        monitor.setOngoingExit(false);
+        monitor.enterWhenCan(getDestinationFloor())
     }
 
     private void begin() {

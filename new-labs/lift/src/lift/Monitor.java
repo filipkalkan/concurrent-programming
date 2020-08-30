@@ -8,7 +8,7 @@ public class Monitor extends Thread {
     
     int floor; // the floor the lift is currently on
     boolean moving; // true if the lift is moving, false if standing still with doors open
-    int direction; // +1 if lift is going up, -1 if going down
+    boolean goingUp; // +1 if lift is going up, -1 if going down
     int[] waitEntry; // number of passengers waiting to enter the lift at the various floors
     int[] waitExit; // number of passengers (in lift) waiting to leave at the various floors
     int load; // number of passengers currently in the lift
@@ -20,23 +20,23 @@ public class Monitor extends Thread {
     }
 
     public boolean goingUp() {
-        return direction > 0;
+        return goingUp;
     }
 
     public int getFloor() {
         return floor;
     }
 
-    // public int getNextFloor() {
-    //     if (floor == 0 || floor == NBR_FLOORS) {
-    //         goingUp = !goingUp;
-    //     }
-    //     if (goingUp) {
-    //         return floor + 1;
-    //     } else {
-    //         return floor - 1;
-    //     }
-    // }
+    public int getNextFloor() {
+        if (floor == 0 || floor == NBR_FLOORS) {
+            goingUp = !goingUp;
+        }
+        if (goingUp) {
+            return floor + 1;
+        } else {
+            return floor - 1;
+        }
+    }
 
     public void setFloor(int floor) {
         this.floor = floor;
@@ -50,14 +50,14 @@ public class Monitor extends Thread {
         return moving;
     }
 
-    // public boolean passengersWantEnter() {
-    //     for (Person person : waitingPersons) {
-    //         if (person.entryAllowed()) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
+    public boolean passengersWantEnter() {
+        for (Person person : waitingPersons) {
+            if (person.entryAllowed()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public boolean liftEmpty() {
         return load == 0;
@@ -81,9 +81,11 @@ public class Monitor extends Thread {
     //     loadedPersons.remove(person);
     // }
 
-    // public void setOngoingEntry(boolean entering) {
-    //     ongoingEntry = entering;
-    // }
+    public void enterWhenCan(int destination) throws InterruptedException {
+        mutex.acquire();
+        load++;
+        waitExit[destination]++;
+    }
 
     // public void setOngoingExit(boolean exiting) {
     //     ongoingExit = exiting;
