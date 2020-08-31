@@ -22,6 +22,10 @@ public class Monitor extends Thread {
 	public boolean liftFull() {
         return load >= MAX_LOAD;
     }
+	
+	private boolean soonFull() {
+		return load + entering >= MAX_LOAD;
+	}
 
     public boolean goingUp() {
         return goingUp;
@@ -121,28 +125,19 @@ public class Monitor extends Thread {
         load--;
     }
     
-    // public void setOngoingExit(boolean exiting) {
-    //     ongoingExit = exiting;
-    // }
-
-    // public boolean ongoingEntry() {
-    //     return ongoingEntry;
-    // }
-
-    // public boolean ongoingExit() {
-    //     return ongoingExit;
-    // }
-    
     public boolean personCanEnter(Person person) {
-    	//System.out.println("!liftFull " + !liftFull() + " !isMoving " + isMoving() + " getFloor" + getFloor() + " goingUp " + goingUp + " person.getStartFloor()\r\n" + 
-    	//		" " + person.getStartFloor());
-    	return !liftFull() &&  getFloor() == person.getStartFloor()
-                && goingUp() == person.isGoingUp() && doorsOpen;
+    	boolean directionCondition;
+    	
+    	if(person.getStartFloor() == 0 || person.getStartFloor() == 6) {
+    		directionCondition = true;
+    	} else {
+    		directionCondition = this.goingUp == person.isGoingUp();
+    	}
+    	
+    	return !liftFull() &&  getFloor() == person.getStartFloor() && doorsOpen && directionCondition && !soonFull();
     }
     
     public boolean personCanExit(Person person) {
-    	//System.out.println("!liftFull " + !liftFull() + " !isMoving " + isMoving() + " getFloor" + getFloor() + " goingUp " + goingUp + " person.getStartFloor()\r\n" + 
-    	//		" " + person.getStartFloor());
     	return  getFloor() == person.getDestinationFloor() && doorsOpen;
     }
     

@@ -19,5 +19,14 @@ public class Simulation {
         
         Lift lift = new Lift(view, monitor, persons);
         lift.start();
+        
+        while(true) {
+        	for(int i = 0; i < 20; i++) {
+        		if(!persons[i].isAlive()) {
+            		persons[i] = new Person(view.createPassenger(), monitor);
+            		persons[i].start();
+        		}
+        	}
+        }
     }
 }
