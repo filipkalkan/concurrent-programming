@@ -15,7 +15,7 @@ public class ClockMain {
         ClockOutput out = clockData.getOutput();
  
         clockData.setTime(15,59,50);
-        clockData.setAlarmTime(15,59,55);
+       // clockData.setAlarmTime(15,59,55);
  
         Semaphore sem = in.getSemaphore();
  
