@@ -23,7 +23,7 @@ public class MyTask implements Runnable {
 	public void run() {
 		try {			
 			String decryptedCode = Factorizer.crack(message, n, new MyTracker(progressItem, mainProgressBar));
-			codeBreaker.onCrack(decryptedCode, progressItem);
+			//codeBreaker.onCrack(decryptedCode, progressItem);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}

@@ -5,9 +5,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.math.BigInteger;
+import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
@@ -26,6 +28,8 @@ public class ProgressItem extends ConvenientPanel {
     private static final Font MESSAGE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private static final Dimension MESSAGE_SIZE = new Dimension(200, 80);
+    private Future<String> task;
+    private JButton cancelButton;
 
     /** Create the panel, displaying the integer _n_ and the encrypted message _code_. */
     public ProgressItem(BigInteger n, String code) {
@@ -67,5 +71,23 @@ public class ProgressItem extends ConvenientPanel {
     /** Ensure this item doesn't expand vertically, only horizontally. */
     public Dimension getMaximumSize() {
         return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+    }
+    
+    public void setTask(Future<String> task) {
+    	this.task = task;
+    }
+    
+    public Future<String> getTask(){
+    	return task;
+    }
+    
+    public JButton addCancelButton() {
+    	this.cancelButton = new JButton("Cancel");
+    	return cancelButton;
+    }
+    
+    public void removeCancelButton() {
+    	this.remove(cancelButton);
+    	this.cancelButton = null;
     }
 }

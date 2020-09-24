@@ -12,12 +12,18 @@ public class MyTracker implements ProgressTracker {
 	public MyTracker(ProgressItem progressItem, JProgressBar mainProgressBar) {
 		this.progressItem = progressItem;
 		this.mainProgressBar = mainProgressBar;
-		mainProgressBar.setMaximum(mainProgressBar.getMaximum() + 1000000);
+		SwingUtilities.invokeLater(() -> {
+			mainProgressBar.setMaximum(mainProgressBar.getMaximum() + 1000000);
+		});
 	}
 
 	@Override
 	public void onProgress(int ppmDelta) {
 		this.totalProgress += ppmDelta;
+		updateProgressBar(ppmDelta);
+	}
+
+	private void updateProgressBar(int ppmDelta) {
 		SwingUtilities.invokeLater(() -> {
 			this.progressItem.getProgressBar().setValue(totalProgress);
 			mainProgressBar.setValue(mainProgressBar.getValue() + ppmDelta);

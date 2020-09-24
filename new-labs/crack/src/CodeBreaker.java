@@ -1,11 +1,8 @@
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Insets;
 import java.math.BigInteger;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -22,7 +19,7 @@ public class CodeBreaker implements SnifferCallback {
 
     private final JPanel workList;
     private final JPanel progressList;
-    private final Executor threadPool;
+    private final ExecutorService threadPool;
     
     private final JProgressBar mainProgressBar;
 
@@ -37,6 +34,7 @@ public class CodeBreaker implements SnifferCallback {
         // TODO: Make thread stuff
         
         threadPool = Executors.newFixedThreadPool(2);
+        w.enableErrorChecks();
     }
     
     // -----------------------------------------------------------------------
@@ -63,35 +61,77 @@ public class CodeBreaker implements SnifferCallback {
     public void onMessageIntercepted(String message, BigInteger n){
         System.out.println("message intercepted (N=" + n + ")...");
         SwingUtilities.invokeLater(() -> {
-        	JButton button = new JButton("Break");
-        	WorklistItem workListItem = new WorklistItem(n, message);
-        	
-        	button.addActionListener((e) -> {
-        		workList.remove(workListItem);
-        		ProgressItem progressItem = new ProgressItem(n, message);
-        		progressList.add(progressItem);
-        		
-        		// Crack-Cocaine
-        		threadPool.execute(() -> {
-					try {
-						String decryptedCode = Factorizer.crack(message, n, new MyTracker(progressItem, mainProgressBar));
-						progressItem.getTextArea().setText(decryptedCode);
-						
-						JButton removeButton = new JButton("Remove");
-						removeButton.addActionListener((e2) -> {
-							progressList.remove(progressItem);
-							mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
-							mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
-						});
-						progressItem.add(removeButton);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
-				});
-        	});
-        	
-        	workListItem.add(button);
-        	workList.add(workListItem);
+        	createWorkListItem(message, n);
         });
     }
+
+	private void createWorkListItem(String message, BigInteger n) {
+    	JButton button = new JButton("Break");
+    	WorklistItem workListItem = new WorklistItem(n, message);
+    	
+    	button.addActionListener((e) -> {
+    		handleBreak(workListItem, message, n);
+    	});
+    	
+    	workListItem.add(button);
+    	workList.add(workListItem);
+		
+	}
+
+	private void handleBreak(WorklistItem workListItem, String message, BigInteger n) {
+		workList.remove(workListItem);
+		ProgressItem progressItem = createProgressItem(message, n);
+		
+		progressItem.setTask(decryptAndDisplay(message, n, progressItem));
+	}
+
+	private ProgressItem createProgressItem(String message, BigInteger n) {
+		ProgressItem progressItem = new ProgressItem(n, message);
+		progressList.add(progressItem);
+		
+		JButton removeButton = new JButton("Remove");
+		removeButton.addActionListener((e) -> {
+			handleRemove(progressItem);
+		});
+		JButton cancelButton = progressItem.addCancelButton();
+		cancelButton.addActionListener((e) -> {
+			handleCancel(progressItem, cancelButton);
+		});
+		
+		progressItem.add(removeButton);
+		progressItem.add(cancelButton);
+		return progressItem;
+	}
+
+	private void handleCancel(ProgressItem progressItem, JButton cancelButton) {
+		progressItem.getTask().cancel(true);
+		progressItem.getTextArea().setText("[cancelled]");
+		int remainingProgress = progressItem.getProgressBar().getMaximum() - progressItem.getProgressBar().getValue();
+		progressItem.getProgressBar().setValue(100);
+		mainProgressBar.setValue(mainProgressBar.getValue() + remainingProgress);
+		progressItem.removeCancelButton();
+	}
+
+	private void handleRemove(ProgressItem progressItem) {
+		progressItem.getTask().cancel(true);
+		progressList.remove(progressItem);
+		mainProgressBar.setValue(mainProgressBar.getValue() - progressItem.getProgressBar().getValue());
+		mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
+	}
+
+	private Future<String> decryptAndDisplay(String message, BigInteger n, ProgressItem progressItem) {
+		return threadPool.submit(() -> {
+			String decryptedMessage;
+			try {
+				decryptedMessage = Factorizer.crack(message, n, new MyTracker(progressItem, mainProgressBar));
+				SwingUtilities.invokeLater(() -> {
+					progressItem.getTextArea().setText(decryptedMessage);
+					progressItem.removeCancelButton();
+				});
+			} catch (InterruptedException e) {
+				
+			}
+			return null;
+		});
+	}
 }
