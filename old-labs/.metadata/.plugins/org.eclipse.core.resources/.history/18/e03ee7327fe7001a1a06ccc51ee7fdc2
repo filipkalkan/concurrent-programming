@@ -1,0 +1,36 @@
+import lift.LiftView;
+
+public class Lift extends Thread {
+	
+	private Monitor monitor;
+	private LiftView view;
+
+	public Lift(Monitor monitor, LiftView view) {
+		this.monitor = monitor;
+		this.view = view;
+	}
+	
+	@Override
+	public void run() {
+		while(true) {
+			try {
+				moveLift();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private synchronized void moveLift() throws InterruptedException {
+		int currentFloor = monitor.getCurrentFloor();
+		int nextFloor = monitor.getNextFloor();
+		view.moveLift(currentFloor, nextFloor);
+		monitor.setFloor(nextFloor);
+		monitor.unloadPassengers();
+		monitor.loadPassengers();
+		System.out.println("Lift waiting");
+		wait();
+		System.out.println("Lift starting");
+	}
+}

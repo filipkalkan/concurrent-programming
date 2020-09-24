@@ -1,0 +1,29 @@
+import lift.LiftView;
+
+public class Lift extends Thread {
+	LiftView view;
+	Monitor monitor;
+	
+	public Lift(LiftView view, Monitor monitor) {
+		this.view = view;
+		this.monitor = monitor;
+	}
+	
+	@Override
+	public void run() {
+		while(true) {
+			updatePassengers();
+			moveToNextFloor();
+		}
+	}
+
+	private synchronized void updatePassengers() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void moveToNextFloor() {
+		
+		
+	}
+}

@@ -1,0 +1,87 @@
+package factory.controller;
+
+import factory.model.DigitalSignal;
+import factory.model.WidgetKind;
+import factory.swingview.Factory;
+
+public class ToolController {
+    private final DigitalSignal conveyor, press, paint;
+    private final long pressingMillis, paintingMillis;
+    private boolean pressingDown, painting;
+    
+    public ToolController(DigitalSignal conveyor,
+                          DigitalSignal press,
+                          DigitalSignal paint,
+                          long pressingMillis,
+                          long paintingMillis)
+    {
+        this.conveyor = conveyor;
+        this.press = press;
+        this.paint = paint;
+        this.pressingMillis = pressingMillis;
+        this.paintingMillis = paintingMillis;
+        pressingDown = painting = false;
+    }
+    
+    //When one thread is executing a synchronized method for an object, all other threads that invoke synchronized methods
+    //for the same object block (suspend execution) until the first thread is done with the object
+    
+    //When isolating shorter critical section in private synchronized method painting is being done during the retracting of
+    //the piston. Increased throughput.
+
+    public void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+        //
+        // TODO: you will need to modify this method
+        //
+        if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
+        	pressingDown = true;
+        	
+        	press.on();
+            Thread.sleep(pressingMillis);
+            pressingDown = false;
+            press.off();
+            Thread.sleep(pressingMillis);   // press needs this time to retract
+            if (!painting) {
+            	conveyor.on();
+            }
+        }
+    }
+    
+    private synchronized void startConveyor(boolean otherAction) {
+    	if (!otherAction) {
+    		conveyor.on();
+    	}
+    }
+    
+    private synchronized void stopConveyor(boolean otherAction) {
+    	if (!otherAction) {
+    		conveyor.off();
+    	}
+    }
+
+    public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
+        //
+        // TODO: you will need to modify this method
+        //
+    	if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
+    		if (!pressingDown) {
+    			conveyor.off();
+    		}
+        	painting = true;
+        	paint.on();
+        	Thread.sleep(paintingMillis);
+        	paint.off();
+        	painting = false;
+        	if (!pressingDown) {
+        		conveyor.on();
+        	}
+        }
+    }
+    
+    // -----------------------------------------------------------------------
+    
+    public static void main(String[] args) {
+        Factory factory = new Factory();
+        factory.startSimulation();
+    }
+}

@@ -1,0 +1,14 @@
+import lift.LiftView;
+
+public class Lift extends Thread {
+	LiftView view;
+	
+	public Lift(LiftView view) {
+		this.view = view;
+	}
+	
+	@Override
+	public void run() {
+		
+	}
+}

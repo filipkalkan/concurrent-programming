@@ -1,0 +1,38 @@
+import lift.LiftView;
+
+public class Simulation {
+
+	private static final int NBR_PERSONS = 20;
+
+	public static void main(String[] args) {
+		LiftView view = new LiftView();
+		Monitor monitor = new Monitor();
+		Person[] persons = new Person[NBR_PERSONS];
+		
+		for(int i = 0; i < 20; i++) {
+			Person person = new Person(view.createPassenger(), monitor);
+			person.start();
+			persons[i] = person;
+		}
+		
+		Lift lift = new Lift(view, monitor);
+		lift.start();
+		
+		
+		
+        /*
+        int from = passenger.getStartFloor();
+        int to   = passenger.getDestinationFloor();
+
+        passenger.begin();              // walk in (from left)
+        if (from != 0) {
+            view.moveLift(0, from);
+        }
+        passenger.enterLift();          // step inside
+        view.moveLift(from, to);
+        passenger.exitLift();           // leave lift
+        passenger.end();                // walk out (to the right)
+		*/
+	}
+
+}

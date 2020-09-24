@@ -1,0 +1,59 @@
+import java.util.Random;
+
+import lift.Passenger;
+
+public class Person extends Thread {
+	private static final long SLEEP_DURATION = 100;
+	private Passenger passenger;
+	private Monitor monitor;
+	private boolean goingUp;
+	
+	public Person(Passenger passenger, Monitor monitor) {
+		this.passenger = passenger;
+		this.monitor = monitor;
+		
+		goingUp = passenger.getStartFloor() - passenger.getDestinationFloor() > 0 ? true : false;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			passenger.begin();
+			monitor.addWaitingPerson(this);
+			awaitEntry();
+			passenger.enterLift();
+			awaitExit();
+			passenger.exitLift();
+			//Notify??
+			passenger.end();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private synchronized void awaitExit() {
+		
+		
+	}
+
+	private synchronized void awaitEntry() throws InterruptedException {
+		while(!entryAllowed()) {
+			Thread.sleep(SLEEP_DURATION);
+		}
+		
+	}
+
+	private boolean entryAllowed() {
+		return !monitor.liftFull() && !monitor.getMoving() && monitor.getFloor() == passenger.getStartFloor() && monitor.goingUp() == goingUp;
+	}
+	
+	public int getStartFloor() {
+		return passenger.getStartFloor();
+	}
+	
+	public int getDestinationFloor() {
+		return passenger.getDestinationFloor();
+	}
+
+}

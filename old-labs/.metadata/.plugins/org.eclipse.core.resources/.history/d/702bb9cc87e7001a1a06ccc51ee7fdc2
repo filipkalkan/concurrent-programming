@@ -1,0 +1,32 @@
+import lift.LiftView;
+
+public class Lift extends Thread {
+	LiftView view;
+	Monitor monitor;
+	
+	public Lift(LiftView view, Monitor monitor) {
+		this.view = view;
+		this.monitor = monitor;
+	}
+	
+	@Override
+	public void run() {
+		while(true) {
+			updatePassengers();
+			moveToNextFloor();
+		}
+	}
+
+	private synchronized void updatePassengers() {
+		unloadPassengers();
+		loadPassengers();
+	}
+
+	private void moveToNextFloor() {
+		int floor = monitor.getFloor();
+		int nextFloor = monitor.getNextFloor();
+		view.moveLift(floor, nextFloor);
+		monitor.setFloor(nextFloor);
+		
+	}
+}
