@@ -17,8 +17,6 @@ public class Monitor extends Thread {
 	int exiting = 0;
 	boolean doorsOpen = false;
 
-	Semaphore mutex = new Semaphore(1);
-
 	public boolean liftFull() {
 		return load >= MAX_LOAD;
 	}
@@ -58,7 +56,7 @@ public class Monitor extends Thread {
 		return moving;
 	}
 
-	public boolean passengersWantEnter() {
+	public synchronized boolean passengersWantEnter() {
 		for (Person person : waitingPersons) {
 			if (personCanEnter(person) || entering > 0) {
 				return true;
@@ -71,7 +69,7 @@ public class Monitor extends Thread {
 		return load == 0;
 	}
 
-	public boolean passengersWantExit() {
+	public synchronized boolean passengersWantExit() {
 		for (Person person : loadedPersons) {
 			if (personCanExit(person) || exiting > 0) {
 				return true;
@@ -82,39 +80,45 @@ public class Monitor extends Thread {
 
 	public synchronized void enterLift(Person person) {
 		loadedPersons.add(person);
+		notifyAll();
 	}
 
 	public synchronized void addWaitingPerson(Person person) {
 		waitingPersons.add(person);
+		notifyAll();
 	}
 
 	public synchronized void enterWhenAllowed(Person person) throws InterruptedException {
 		while (!personCanEnter(person)) {
-			wait(100);
+			wait();
 		}
 		enterLift(person);
 
 		entering++;
+		notifyAll();
 	}
 
 	public synchronized void completeEntering(Person person) {
 		waitingPersons.remove(person);
 		entering--;
 		load++;
+		notifyAll();
 	}
 
 	public synchronized void exitWhenAllowed(Person person) throws InterruptedException {
 		while (!personCanExit(person)) {
-			wait(100);
+			wait();
 		}
 
 		exiting++;
+		notifyAll();
 	}
 
 	public synchronized void completeExiting(Person person) {
 		loadedPersons.remove(person);
 		exiting--;
 		load--;
+		notifyAll();
 	}
 
 	public synchronized boolean personCanEnter(Person person) {
@@ -135,10 +139,38 @@ public class Monitor extends Thread {
 
 	public synchronized void setDoorsOpen(boolean open) {
 		doorsOpen = open;
+		notifyAll();
 	}
 
 	public synchronized boolean personsToServe() {
 		return !(waitingPersons.isEmpty() && loadedPersons.isEmpty());
+	}
+	
+	public synchronized void updatePassengers() {
+		unloadPassengers();
+		loadPassengers();
+	}
+
+	private synchronized void loadPassengers() {
+		while (!liftFull() && passengersWantEnter()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	private synchronized void unloadPassengers() {
+		while (!liftEmpty() && passengersWantExit()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 }
