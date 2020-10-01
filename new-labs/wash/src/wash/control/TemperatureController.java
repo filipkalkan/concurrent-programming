@@ -41,7 +41,7 @@ public class TemperatureController extends ActorThread<WashingMessage> {
 					break;
 				case WashingMessage.TEMP_SET:
 					double currentTemp = io.getTemperature();
-					if (currentTemp < targetTemp - ml && reachedUpperLastTime == false) {
+					if (currentTemp < targetTemp - mu && reachedUpperLastTime == false) {
 						io.heat(true);
 					} else if(currentTemp >= targetTemp - mu){
 						reachedUpperLastTime = true;
