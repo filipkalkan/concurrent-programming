@@ -52,12 +52,13 @@ public class WashingProgram3 extends ActorThread<WashingMessage> {
             // For the WATER_IDLE order, the water level regulator will not send
             // any acknowledgment.
             water.send(new WashingMessage(this, WashingMessage.WATER_IDLE));
-
+            WashingMessage ack3 = receive();  // wait for acknowledgment
+            System.out.println("got " + ack3);
             // Switch off spin. We expect an acknowledgment, to ensure
             // the hatch isn't opened while the barrel is spinning.
             spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
-            WashingMessage ack3 = receive();  // wait for acknowledgment
-            System.out.println("got " + ack3);
+            WashingMessage ack4 = receive();  // wait for acknowledgment
+            System.out.println("got " + ack4);
 
             // Unlock hatch
             io.lock(false);

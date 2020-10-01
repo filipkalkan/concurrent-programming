@@ -7,46 +7,45 @@ public class SpinController extends ActorThread<WashingMessage> {
 
     // TODO: add attributes
     private WashingIO io;
-    private int previousDirection;
+    private int currentSpin;
+    private WashingMessage currentMessage;
 
     public SpinController(WashingIO io) {
         this.io = io;
-        // TODO
     }
 
     @Override
     public void run() {
         try {
-
-            // ... TODO ...
-
             while (true) {
                 // wait for up to a (simulated) minute for a WashingMessage
-                WashingMessage m = receiveWithTimeout(60000 / Settings.SPEEDUP);
+                WashingMessage recievedMessage = receiveWithTimeout(60000 / Settings.SPEEDUP);
+                if(recievedMessage != null) {
+                	currentMessage = recievedMessage;
+                }
 
                 // if m is null, it means a minute passed and no message was received
-                if (m != null) {
-                    System.out.println("got " + m);
-                    switch (m.getCommand()) {
+                if (currentMessage != null) {
+                    switch (currentMessage.getCommand()) {
                         case WashingMessage.SPIN_SLOW:
-                            if(previousDirection == io.SPIN_LEFT) {
-                                io.setSpinMode(io.SPIN_RIGHT);
+                            if(currentSpin == WashingIO.SPIN_LEFT) {
+                                currentSpin = WashingIO.SPIN_RIGHT;
                             } else {
-                                io.setSpinMode(io.SPIN_LEFT);
+                                currentSpin = WashingIO.SPIN_LEFT;
                             }
                             break;
 
                         case WashingMessage.SPIN_FAST:
-                            io.setSpinMode(io.SPIN_FAST);
+                            currentSpin = WashingIO.SPIN_FAST;
                             break;
 
                         case WashingMessage.SPIN_OFF:
-                            io.setSpinMode(io.SPIN_IDLE);
+                            currentSpin = WashingIO.SPIN_IDLE;
                             break;
                     }
+                    io.setSpinMode(currentSpin);
+                    currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
                 }
-                
-                // ... TODO ...
             }
         } catch (InterruptedException unexpected) {
             // we don't expect this thread to be interrupted,

@@ -37,14 +37,38 @@ public class WashingProgram1 extends ActorThread<WashingMessage> {
             
          // Lock the hatch
             io.lock(true);
+            //Let water into the machine
+            System.out.println("setting WATER_FILL...");
+            water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
+            WashingMessage ack0 = receive();
+            System.out.println("washing program 1 got " + ack0);
+            //Heat to 40 degrees
+            System.out.println("heating to 40 degrees...");
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_SET, 40));
+            WashingMessage ackTemp = receive();
+            System.out.println("washing program 1 got " + ackTemp);
             // Instruct SpinController to rotate barrel slowly, back and forth
             // Expect an acknowledgment in response.
             System.out.println("setting SPIN_SLOW...");
             spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
             WashingMessage ack1 = receive();
             System.out.println("washing program 1 got " + ack1);
-            // Spin for five simulated minutes (one minute == 60000 milliseconds)
-            Thread.sleep(5 * 60000 / Settings.SPEEDUP);
+            // Spin for 30 simulated minutes (one minute == 60000 milliseconds)
+            Thread.sleep(30 * 60000 / Settings.SPEEDUP);
+            //drain, rinse 5 times 2 minutes in cold water,
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
+            water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+            for(int i = 0; i < 5; i++) {
+            	water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
+            	receive();
+            	sleep(2 * 60 * 1000 / Settings.SPEEDUP);
+            	water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+            	receive();
+            }
+            //centrifuge for 5 minutes
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
+            receive();
+            sleep(5 * 60 * 1000 / Settings.SPEEDUP);
             // Instruct SpinController to stop spin barrel spin.
             // Expect an acknowledgment in response.
             System.out.println("setting SPIN_OFF...");
