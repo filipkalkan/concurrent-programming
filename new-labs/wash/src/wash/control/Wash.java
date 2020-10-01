@@ -7,7 +7,7 @@ public class Wash {
 
     public static void main(String[] args) throws InterruptedException {
     	//WashingSimulator sim = new WashingSimulator(Settings.SPEEDUP);
-    	WashingSimulator sim = new WashingSimulator(600);
+    	WashingSimulator sim = new WashingSimulator(Settings.SPEEDUP);
         
         WashingIO io = sim.startSimulation();
 

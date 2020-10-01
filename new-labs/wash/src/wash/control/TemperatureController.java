@@ -11,9 +11,14 @@ public class TemperatureController extends ActorThread<WashingMessage> {
 	private WashingMessage currentMessage;
 	private double targetTemp;
 	private int command;
+	private boolean acked;
+	private boolean reachedUpperLastTime;
 
 	public TemperatureController(WashingIO io) {
 		this.io = io;
+		this.targetTemp = 0;
+		this.acked = true;
+		this.reachedUpperLastTime = false;
 	}
 
 	@Override
@@ -26,22 +31,30 @@ public class TemperatureController extends ActorThread<WashingMessage> {
 				if (recievedMessage != null) {
 					currentMessage = recievedMessage;
 					command = recievedMessage.getCommand();
+					acked = false;
+					targetTemp = currentMessage.getValue();
 				}
 				switch (command) {
 				case WashingMessage.TEMP_IDLE:
+					reachedUpperLastTime = false;
 					io.heat(false);
 					break;
 				case WashingMessage.TEMP_SET:
-					targetTemp = currentMessage.getValue();
-					if (io.getTemperature() < targetTemp - mu) {
+					double currentTemp = io.getTemperature();
+					if (currentTemp < targetTemp - ml && reachedUpperLastTime == false) {
 						io.heat(true);
-					} else {
+					} else if(currentTemp >= targetTemp - mu){
+						reachedUpperLastTime = true;
 						io.heat(false);
+					} else if(currentTemp <= targetTemp - 2 + ml) {
+						reachedUpperLastTime = false;
+						io.heat(true);
 					}
 					break;
 				}
-				if(currentMessage != null) {
+				if(!acked) {
 					currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+					acked = true;
 				}
 			}
 
