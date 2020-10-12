@@ -11,6 +11,7 @@
  */
 
 struct intset {
+  pthread_mutex_t mutex;
   int size;
   int allocated;
   int *data;
@@ -32,6 +33,7 @@ intset_create()
     exit(1);
   }
 
+  pthread_mutex_init(&(s->mutex), NULL);
   s->size = 0;
   s->allocated = 10;
   s->data = malloc(sizeof(int) * s->allocated);
@@ -78,6 +80,7 @@ find(struct intset *s, int a)
 bool
 intset_add(struct intset *s, int a)
 {
+  pthread_mutex_lock(&(s->mutex));
   // rehash if more than 70% is used
   if (s->size >= s->allocated * 7 / 10) {
     int old_allocated = s->allocated;
@@ -109,12 +112,13 @@ intset_add(struct intset *s, int a)
 
   int idx = find(s, a);
   if (s->data[idx] == a) {
+    pthread_mutex_unlock(&(s->mutex));
     return false;
   }
 
   s->data[idx] = a;
   s->size++;
-
+  pthread_mutex_unlock(&(s->mutex));
   return true;
 }
 
