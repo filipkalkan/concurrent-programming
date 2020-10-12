@@ -12,14 +12,14 @@ import wash.io.WashingIO;
  * 
  * It can be used after an emergency stop (program 0) or a power failure.
  */
-public class WashingProgram1 extends ActorThread<WashingMessage> {
+public class WashingProgram2 extends ActorThread<WashingMessage> {
 
     private WashingIO io;
     private ActorThread<WashingMessage> temp;
     private ActorThread<WashingMessage> water;
     private ActorThread<WashingMessage> spin;
     
-    public WashingProgram1(WashingIO io,
+    public WashingProgram2(WashingIO io,
                            ActorThread<WashingMessage> temp,
                            ActorThread<WashingMessage> water,
                            ActorThread<WashingMessage> spin) 
@@ -53,6 +53,13 @@ public class WashingProgram1 extends ActorThread<WashingMessage> {
             spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
             WashingMessage ack1 = receive();
             System.out.println("washing program 1 got " + ack1);
+            // Spin for 20 simulated minutes (one minute == 60000 milliseconds)
+            Thread.sleep(20 * 60000 / Settings.SPEEDUP);
+            //Heat to 60 degrees
+            System.out.println("heating to 60 degrees...");
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_SET, 60));
+            WashingMessage ackTemp1 = receive();
+            System.out.println("washing program 1 got " + ackTemp1);
             // Spin for 30 simulated minutes (one minute == 60000 milliseconds)
             Thread.sleep(30 * 60000 / Settings.SPEEDUP);
             //drain, rinse 5 times 2 minutes in cold water,
