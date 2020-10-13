@@ -104,12 +104,13 @@ public class CodeBreaker implements SnifferCallback {
 	}
 
 	private void handleCancel(ProgressItem progressItem, JButton cancelButton) {
-		progressItem.getTask().cancel(true);
-		progressItem.getTextArea().setText("[cancelled]");
-		int remainingProgress = progressItem.getProgressBar().getMaximum() - progressItem.getProgressBar().getValue();
-		progressItem.getProgressBar().setValue(100);
-		mainProgressBar.setValue(mainProgressBar.getValue() + remainingProgress);
-		progressItem.removeCancelButton();
+		if(progressItem.getTask().cancel(true)) {
+			progressItem.getTextArea().setText("[cancelled]");
+			int remainingProgress = progressItem.getProgressBar().getMaximum() - progressItem.getProgressBar().getValue();
+			progressItem.getProgressBar().setValue(1000000);
+			mainProgressBar.setValue(mainProgressBar.getValue() + remainingProgress);
+			progressItem.removeCancelButton();
+		}
 	}
 
 	private void handleRemove(ProgressItem progressItem) {

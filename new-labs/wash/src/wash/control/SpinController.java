@@ -9,9 +9,11 @@ public class SpinController extends ActorThread<WashingMessage> {
     private WashingIO io;
     private int currentSpin;
     private WashingMessage currentMessage;
+    private boolean acked;
 
     public SpinController(WashingIO io) {
         this.io = io;
+        this.acked = true;
     }
 
     @Override
@@ -22,6 +24,7 @@ public class SpinController extends ActorThread<WashingMessage> {
                 WashingMessage recievedMessage = receiveWithTimeout(60000 / Settings.SPEEDUP);
                 if(recievedMessage != null) {
                 	currentMessage = recievedMessage;
+                	this.acked = false;
                 }
 
                 // if m is null, it means a minute passed and no message was received
@@ -44,7 +47,10 @@ public class SpinController extends ActorThread<WashingMessage> {
                             break;
                     }
                     io.setSpinMode(currentSpin);
-                    currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                    if(!acked) {
+                    	currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                    	this.acked = true;
+                    }
                 }
             }
         } catch (InterruptedException unexpected) {

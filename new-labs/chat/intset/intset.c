@@ -127,10 +127,12 @@ intset_add(struct intset *s, int a)
 bool
 intset_contains(struct intset *s, int a)
 {
+  pthread_mutex_lock(&(s->mutex));
   // use private helper function above
   int idx = find(s, a);
   bool found = (s->data[idx] == a);
 
+  pthread_mutex_unlock(&(s->mutex));
   return found;
 }
 
@@ -139,7 +141,9 @@ intset_contains(struct intset *s, int a)
 int
 intset_size(struct intset *s)
 {
+  pthread_mutex_lock(&(s->mutex));
   int sz = s->size;
 
+  pthread_mutex_unlock(&(s->mutex));
   return sz;
 }

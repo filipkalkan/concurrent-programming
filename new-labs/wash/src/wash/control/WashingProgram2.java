@@ -33,7 +33,7 @@ public class WashingProgram2 extends ActorThread<WashingMessage> {
     @Override
     public void run() {
         try {
-            System.out.println("washing program 1 started");
+            System.out.println("washing program 2 started");
             
          // Lock the hatch
             io.lock(true);

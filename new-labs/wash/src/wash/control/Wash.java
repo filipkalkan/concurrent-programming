@@ -36,7 +36,8 @@ public class Wash {
             	break;
             case 2:
             	if(runningProgram == null) {
-
+              		runningProgram = new WashingProgram2(io, temp, water, spin);
+            		runningProgram.start();
             	} else {
             		System.out.println("A program is already running!");
             	}
@@ -46,7 +47,6 @@ public class Wash {
 
             		runningProgram = new WashingProgram3(io, temp, water, spin);
             		runningProgram.start();
-                    
             	} else {
             		System.out.println("A program is already running!");
             	}
@@ -54,6 +54,7 @@ public class Wash {
             case 0:
             	// Turn off machine
             	runningProgram.interrupt();
+            	runningProgram.join();
             	runningProgram = new WashingProgram0(io, temp, water, spin);
             	runningProgram.start();
             	runningProgram.join();

@@ -5,14 +5,13 @@ import wash.io.WashingIO;
 
 public class WaterController extends ActorThread<WashingMessage> {
 	private long dt = 3000; //ms
-    private double mu = dt * 0.0478;
-    private double ml = dt * 9.52 * Math.pow(10, -4);
     private WashingIO io;
     private WashingMessage currentMessage;
-	private double targetTemp;
+    private boolean acked;
 
     public WaterController(WashingIO io) {
         this.io = io;
+        this.acked = true;
     }
 
     @Override
@@ -23,29 +22,41 @@ public class WaterController extends ActorThread<WashingMessage> {
                 WashingMessage recievedMessage = receiveWithTimeout(dt / Settings.SPEEDUP);
                 if(recievedMessage != null) {
                 	currentMessage = recievedMessage;
+                	acked = false;
                 }
 
                 // if m is null, it means a minute passed and no message was received
                 if (currentMessage != null) {
                     switch (currentMessage.getCommand()) {
                         case WashingMessage.WATER_DRAIN:
-                        	while(io.getWaterLevel() != 0) {
+                        	io.fill(false);
+                        	if(io.getWaterLevel() > 0) {
                         		io.drain(true);
                         	}
-                        	io.drain(false);
+                            if(!acked && io.getWaterLevel() <= 0) {
+                            	currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                            	acked = true;
+                            }
                             break;
 
                         case WashingMessage.WATER_FILL:
-                        	while(io.getWaterLevel() < currentMessage.getCommand()) {
+                        	io.drain(false);
+                        	if(io.getWaterLevel() < currentMessage.getValue()) {
                         		io.fill(true);
+                        	} else {
+                        		io.fill(false);
                         	}
-                        	io.fill(false);
+                            if(!acked && io.getWaterLevel() >= currentMessage.getValue()) {
+                            	currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                            	acked = true;
+                            }
                             break;
 
                         case WashingMessage.WATER_IDLE:
+                        	io.fill(false);
+                        	io.drain(false);
                             break;
                     }
-                    currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
                 }
             }
         } catch (InterruptedException unexpected) {

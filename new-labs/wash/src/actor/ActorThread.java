@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ActorThread<M> extends Thread {
 
-	BlockingQueue queue = new ArrayBlockingQueue(1024);
+	protected BlockingQueue queue = new ArrayBlockingQueue(1024);
     /** Called by another thread, to send a message to this thread. */
     public void send(M message) {
 		try {

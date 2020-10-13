@@ -46,13 +46,13 @@ public class TemperatureController extends ActorThread<WashingMessage> {
 					} else if(currentTemp >= targetTemp - mu){
 						reachedUpperLastTime = true;
 						io.heat(false);
-					} else if(currentTemp <= targetTemp - 2 + ml) {
+					} else if(currentTemp <= targetTemp - 2 + ml + 0.5) { //Is ml to small?? we shouldn't need +0.5 here
 						reachedUpperLastTime = false;
 						io.heat(true);
 					}
 					break;
 				}
-				if(!acked) {
+				if(!acked && (currentMessage.getCommand() == WashingMessage.TEMP_SET ? reachedUpperLastTime : true)) {
 					currentMessage.getSender().send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
 					acked = true;
 				}

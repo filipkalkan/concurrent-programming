@@ -57,7 +57,9 @@ public class WashingProgram1 extends ActorThread<WashingMessage> {
             Thread.sleep(30 * 60000 / Settings.SPEEDUP);
             //drain, rinse 5 times 2 minutes in cold water,
             temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
+            receive();
             water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+            receive();
             for(int i = 0; i < 5; i++) {
             	water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
             	receive();
@@ -66,7 +68,7 @@ public class WashingProgram1 extends ActorThread<WashingMessage> {
             	receive();
             }
             //centrifuge for 5 minutes
-            spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_FAST));
             receive();
             sleep(5 * 60 * 1000 / Settings.SPEEDUP);
             // Instruct SpinController to stop spin barrel spin.

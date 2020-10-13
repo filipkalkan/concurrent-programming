@@ -39,4 +39,18 @@ class ChatTest {
 
         ChatLog.expect(NBR_TWITS, NBR_TWITS * NBR_MESSAGES);
     }
+    
+    @Test
+    void testALotOfTwits() throws InterruptedException {
+        final int NBR_TWITS     = 100;     // number of clients
+        final int NBR_MESSAGES  = 10000;     // number of messages from each client
+        final int MESSAGE_DELAY = 0;   // maximal delay between messages 
+
+        for (int i = 1; i <= NBR_TWITS; i++) {
+            Twit t = new Twit("twit" + i, NBR_MESSAGES, MESSAGE_DELAY);
+            t.start();
+        }
+
+        ChatLog.expect(NBR_TWITS, NBR_TWITS * NBR_MESSAGES);
+    }
 }
